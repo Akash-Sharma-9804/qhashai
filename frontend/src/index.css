@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Globally target react-toastify toasts */
+.Toastify__toast {
+  font-size: 1rem; /* adjust base size */
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+/* Adjust specifically for smaller screens */
+@media (max-width: 480px) {
+  .Toastify__toast-container {
+    width: 80% !important;    /* narrower container */
+    left: 20% !important;      /* center horizontally */
+    right: 5% !important;
+  }
+
+  .Toastify__toast {
+    font-size: 0.85rem;       /* smaller text */
+    padding: 10px 12px;       /* tighter padding */
+  }
+
+  .Toastify__toast-body {
+    word-break: break-word;   /* wrap long words nicely */
+  }
+}

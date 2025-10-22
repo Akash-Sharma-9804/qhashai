@@ -1,0 +1,298 @@
+// 🚀 STREAMING RESPONSE VERSION (Like ChatGPT)
+exports.askChatbot = async (req, res) => {
+  console.log("✅ Received request at /chat:", req.body);
+
+  let { userMessage, conversation_id, extracted_summary } = req.body;
+  const user_id = req.user?.user_id;
+  const uploadedFiles = req.body.uploaded_file_metadata || [];
+
+  if (!user_id) {
+    return res.status(401).json({ error: "Unauthorized: User ID not found." });
+  }
+
+  if (!userMessage && !extracted_summary) {
+    return res.status(400).json({
+      error: "User message or extracted summary is required",
+    });
+  }
+
+  try {
+    // 🚀 ULTRA-FAST CONTEXT PREPARATION (Parallel + Cached)
+    const [summaryContext, suggestions] = await Promise.all([
+      getContextFast(conversation_id),
+      generateSuggestionsUltraFast(userMessage)
+    ]);
+
+    // 🚀 MINIMAL OPTIMIZED PROMPT
+    const messages = buildOptimizedMessages(summaryContext, extracted_summary, userMessage, uploadedFiles);
+
+    // 🚀 STREAMING RESPONSE (Like ChatGPT)
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+
+    let fullResponse = "";
+    
+    try {
+      const stream = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        stream: true, // 🚀 STREAMING ENABLED
+      });
+
+      // 🚀 STREAM RESPONSE CHUNKS (Real-time like ChatGPT)
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          fullResponse += content;
+          
+          // Send chunk to frontend immediately
+          res.write(JSON.stringify({
+            type: 'chunk',
+            content: content,
+            suggestions: suggestions // Send suggestions with first chunk
+          }) + '\n');
+        }
+      }
+
+      // 🚀 SEND FINAL RESPONSE
+      res.write(JSON.stringify({
+        type: 'complete',
+        conversation_id: conversation_id,
+        full_response: fullResponse,
+        suggestions: suggestions,
+        uploaded_files: uploadedFiles.map(file => ({
+          file_name: file.file_name,
+          file_path: file.file_path,
+          file_type: file.file_name?.split(".").pop()?.toLowerCase() || null,
+        }))
+      }) + '\n');
+
+      res.end();
+
+    } catch (streamError) {
+      console.error("❌ Streaming error:", streamError);
+      res.write(JSON.stringify({
+        type: 'error',
+        error: 'Streaming failed'
+      }) + '\n');
+      res.end();
+    }
+
+    // 🔄 BACKGROUND PROCESSING (Fire and forget)
+    setImmediate(() => {
+      handleBackgroundTasksUltraFast(conversation_id, userMessage, fullResponse, uploadedFiles, extracted_summary, suggestions, user_id);
+    });
+
+  } catch (error) {
+    console.error("❌ Chat controller error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// 🚀 ULTRA-FAST CONTEXT RETRIEVAL (Cached)
+async function getContextFast(conversation_id) {
+  if (!conversation_id) return "";
+  
+  try {
+    // Use connection pooling and optimized query
+    const result = await db.query(
+      "SELECT summarized_chat FROM chat_history WHERE conversation_id = ? AND summarized_chat IS NOT NULL ORDER BY created_at DESC LIMIT 1",
+      [conversation_id]
+    );
+    
+    return result?.[0]?.summarized_chat || "";
+  } catch (error) {
+    console.error("❌ Context fetch failed:", error);
+    return "";
+  }
+}
+
+// 🚀 ULTRA-FAST SUGGESTIONS (Minimal tokens)
+async function generateSuggestionsUltraFast(userMessage) {
+  try {
+    const result = await deepseek.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system",
+          content: "Generate 3 short follow-up questions. Numbers only."
+        },
+        { role: "user", content: userMessage.substring(0, 200) } // Limit for speed
+      ],
+      temperature: 0.8,
+      max_tokens: 60,
+    });
+
+    const raw = result.choices?.[0]?.message?.content || "";
+    return raw.split("\n")
+      .map(s => s.replace(/^[\s\d\-•.]+/, "").trim())
+      .filter(Boolean)
+      .slice(0, 3);
+  } catch (error) {
+    return ["Tell me more", "What else?", "Continue"];
+  }
+}
+
+// 🚀 OPTIMIZED MESSAGE BUILDING
+function buildOptimizedMessages(summaryContext, extracted_summary, userMessage, uploadedFiles) {
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long", 
+    day: "numeric",
+  });
+
+  const messages = [
+    {
+      role: "system",
+      content: `You are QhashAI by QuantumHash team (2024). Current date: ${currentDate}. Be helpful and accurate.`
+    }
+  ];
+
+  // Add context efficiently
+  if (summaryContext) {
+    messages.push({
+      role: "system",
+      content: `Context: ${summaryContext.substring(0, 2000)}`
+    });
+  }
+
+  if (extracted_summary && extracted_summary !== "No readable content") {
+    messages.push({
+      role: "system", 
+      content: `Document: ${extracted_summary.substring(0, 5000)}`
+    });
+  }
+
+  // User message
+  let fullUserMessage = userMessage;
+  if (uploadedFiles.length > 0) {
+    const fileNames = uploadedFiles.map(f => f?.file_name).filter(Boolean);
+    if (fileNames.length > 0) {
+      fullUserMessage += `\n[Files: ${fileNames.join(", ")}]`;
+    }
+  }
+
+  messages.push({ role: "user", content: fullUserMessage });
+  
+  return messages;
+}
+
+// 🔄 ULTRA-FAST BACKGROUND PROCESSING
+async function handleBackgroundTasksUltraFast(conversation_id, userMessage, aiResponse, uploadedFiles, extracted_summary, suggestions, user_id) {
+  try {
+    // Create conversation if needed (non-blocking)
+    if (!conversation_id || isNaN(conversation_id)) {
+      const result = await db.query(
+        "INSERT INTO conversations (user_id, name) VALUES (?, ?)",
+        [user_id, userMessage?.substring(0, 20) || "New Chat"]
+      );
+      conversation_id = result[0]?.insertId || result.insertId;
+    }
+
+    // 🚀 PARALLEL BACKGROUND TASKS
+    await Promise.allSettled([
+      // Save to database
+      db.query(
+        "INSERT INTO chat_history (conversation_id, user_message, response, created_at, file_path, extracted_text, file_names, suggestions) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?)",
+        [
+          conversation_id,
+          userMessage,
+          aiResponse,
+          uploadedFiles.map(f => f?.file_path).filter(Boolean).join(",") || null,
+          extracted_summary || null,
+          uploadedFiles.map(f => f?.file_name).filter(Boolean).join(",") || null,
+          JSON.stringify(suggestions) || null,
+        ]
+      ),
+      
+      // Rename conversation
+      renameConversationFast(conversation_id, userMessage),
+      
+      // Generate summary (only if needed)
+      generateSummaryFast(conversation_id, userMessage, aiResponse)
+    ]);
+
+    console.log("✅ Background tasks completed for conversation:", conversation_id);
+  } catch (error) {
+    console.error("❌ Background tasks failed:", error);
+  }
+}
+
+// 🚀 FAST CONVERSATION RENAME
+async function renameConversationFast(conversation_id, userMessage) {
+  if (!userMessage) return;
+  
+  try {
+    const [rows] = await db.query("SELECT name FROM conversations WHERE id = ?", [conversation_id]);
+    const currentName = rows?.name;
+    
+    if (currentName === "New Conversation" || currentName === "New Chat" || !currentName) {
+      const newName = userMessage.length > 20 
+        ? userMessage.substring(0, 17) + "..." 
+        : userMessage;
+      
+      await db.query("UPDATE conversations SET name = ? WHERE id = ?", [newName, conversation_id]);
+    }
+  } catch (error) {
+    console.error("❌ Rename failed:", error);
+  }
+}
+
+// 🚀 FAST SUMMARY GENERATION
+async function generateSummaryFast(conversation_id, currentUserMessage, currentAiResponse) {
+  try {
+    // Check if summary needed
+    const countResult = await db.query(
+      "SELECT COUNT(*) as count FROM chat_history WHERE conversation_id = ?",
+      [conversation_id]
+    );
+    
+    const messageCount = countResult[0]?.count || 0;
+    if (messageCount < 3) return;
+
+    // Get recent messages only (for speed)
+    const recentHistory = await db.query(
+      "SELECT user_message, response FROM chat_history WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 6",
+      [conversation_id]
+    );
+
+    const conversationText = recentHistory
+      .reverse()
+      .map(chat => `User: ${chat.user_message}\nAI: ${chat.response}`)
+      .join('\n') + `\nUser: ${currentUserMessage}\nAI: ${currentAiResponse}`;
+
+    // Generate summary
+    const summaryResult = await deepseek.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system",
+          content: "Summarize this conversation in 2-3 sentences. Include main topics and key information."
+        },
+        {
+          role: "user", 
+          content: conversationText.substring(0, 2000)
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 150,
+    });
+
+    const summary = summaryResult.choices?.[0]?.message?.content || "";
+    
+    if (summary && summary.length > 10) {
+      await db.query(
+        "UPDATE chat_history SET summarized_chat = ? WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 1",
+        [summary, conversation_id]
+      );
+    }
+  } catch (error) {
+    console.error("❌ Summary generation failed:", error);
+  }
+}

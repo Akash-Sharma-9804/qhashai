@@ -1,0 +1,65 @@
+/* Add these new styles to your existing sidebar.css */
+
+.typing-animation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-text {
+  background: linear-gradient(90deg, 
+    rgba(156, 163, 175, 0.4) 25%, 
+    rgba(156, 163, 175, 0.7) 50%, 
+    rgba(156, 163, 175, 0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: typing-shimmer 1.5s infinite;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dark .typing-text {
+  background: linear-gradient(90deg, 
+    rgba(75, 85, 99, 0.4) 25%, 
+    rgba(75, 85, 99, 0.7) 50%, 
+    rgba(75, 85, 99, 0.4) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes typing-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.typing-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.typing-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
