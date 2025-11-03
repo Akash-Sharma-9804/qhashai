@@ -5,7 +5,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
+api.zip
+frontend (3).zip
 # ===== Frontend =====
 frontend/node_modules/
 frontend/.env

@@ -194,7 +194,7 @@ function detectFileType(matchedText, fullMessage) {
   return "docx"; // Default
 }
 
-// ✅ SMART DOCUMENT TYPE DETECTION
+// ✅ SMART DOCUMENT TYPE DETECTIONF
 function detectDocumentType(matchedText, fullMessage) {
   const text = (matchedText + " " + fullMessage).toLowerCase();
 

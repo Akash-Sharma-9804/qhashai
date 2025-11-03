@@ -107,7 +107,7 @@ const toggleTheme = () => {
             applicable to all services across our domains:
             <br />
             <span className="text-blue-400 block mt-2">
-              quantumhash.me, qhashai.com, artlabss.com, quantumedu.in, asesystem.com
+              quantumhash.me, qhashai.com, officemom.me, quantumedu.in, asesystem.hsequiz.quantumhash.me
             </span>
           </p>
 
@@ -123,7 +123,7 @@ const toggleTheme = () => {
 
             <p><strong>3. How We Use Data:</strong> Service improvement, personalization, safety assurance. No third-party ads.</p>
             <p><strong>4. Data Sharing:</strong> Only with trusted vendors or internally under strict agreements. All secured.</p>
-            <p><strong>5. Your Rights:</strong> Request data access, correction, or deletion. Email: <a href="mailto:privacy@quantumhash.me" className="text-blue-400">privacy@quantumhash.me</a></p>
+            <p><strong>5. Your Rights:</strong> Request data access, correction, or deletion. Email: <a href="mailto:support@quantumhash.me" className="text-blue-400">support@quantumhash.me</a></p>
             <p><strong>6. Children’s Privacy:</strong> COPPA and GDPR-K compliant for QuantumEdu. Parental consent is required.</p>
           </div>
         </section>
@@ -141,7 +141,7 @@ const toggleTheme = () => {
             <p><strong>3. Platform Rules:</strong></p>
             <ul className="list-disc list-inside ml-4">
               <li>QhashAI: Don’t submit sensitive data. AI is for informational purposes only.</li>
-              <li>ArtLabss: Voice data may be processed. Misuse not tolerated.</li>
+             <li>officemom: Meeting recordings may be analyzed to generate summaries. Ensure discussions are appropriate and authorized for processing.</li>
               <li>QuantumEdu: Parental setup for minors. Misuse can result in suspension.</li>
               <li>ASE System: Reports must be accurate. Not a substitute for professional audits.</li>
             </ul>
